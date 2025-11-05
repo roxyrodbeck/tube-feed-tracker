@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { logger } from "@/lib/logger"
+import { trackFormulaSearch } from "@/lib/analytics"
 
 interface Formula {
   name: string
@@ -45,6 +46,9 @@ export function FormulaSearch({ onFormulaSelect, sessionId }: FormulaSearchProps
       selectedFormula,
       searchDuration: duration,
     })
+
+    // Track with Google Analytics
+    trackFormulaSearch(searchQuery, resultsCount)
   }
 
   const searchFormulas = async () => {
@@ -113,7 +117,7 @@ export function FormulaSearch({ onFormulaSelect, sessionId }: FormulaSearchProps
         <Info className="h-4 w-4" />
         <AlertDescription>
           Search for enteral nutrition formulas designed specifically for tube feeding. Try brands like Kate Farms,
-          Abbott, or conditions like diabetes, COPD.
+          Abbott, Nestlé, or formula types like plant-based, elemental, high-calorie.
         </AlertDescription>
       </Alert>
 
@@ -129,7 +133,11 @@ export function FormulaSearch({ onFormulaSelect, sessionId }: FormulaSearchProps
             className="pl-10"
           />
         </div>
-        <Button onClick={searchFormulas} disabled={isLoading || !query.trim()}>
+        <Button
+          onClick={searchFormulas}
+          disabled={isLoading || !query.trim()}
+          className="bg-green-600 hover:bg-green-700"
+        >
           {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
         </Button>
       </div>
@@ -147,7 +155,7 @@ export function FormulaSearch({ onFormulaSelect, sessionId }: FormulaSearchProps
                   setQuery(search)
                   setTimeout(() => searchFormulas(), 100)
                 }}
-                className="text-xs"
+                className="text-xs border-green-200 text-green-700 hover:bg-green-50 hover:text-green-800 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-900/20"
               >
                 {search}
               </Button>
@@ -174,7 +182,11 @@ export function FormulaSearch({ onFormulaSelect, sessionId }: FormulaSearchProps
                   <CardTitle className="text-lg">{formula.name}</CardTitle>
                   <p className="text-sm text-gray-600 dark:text-gray-400">{formula.brand}</p>
                 </div>
-                <Button size="sm" onClick={() => handleFormulaSelect(formula)} className="ml-2">
+                <Button
+                  size="sm"
+                  onClick={() => handleFormulaSelect(formula)}
+                  className="ml-2 bg-green-600 hover:bg-green-700"
+                >
                   <Calculator className="h-4 w-4 mr-1" />
                   Use Formula
                 </Button>

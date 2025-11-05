@@ -1,5 +1,3 @@
-import { generateObject } from "ai"
-import { openai } from "@ai-sdk/openai"
 import { z } from "zod"
 
 const FormulaSchema = z.object({
@@ -18,9 +16,8 @@ const FormulaSchema = z.object({
   ),
 })
 
-// Comprehensive enteral formula database - focused on tube feeding formulas only
+// Comprehensive enteral formula database
 const ENTERAL_FORMULAS = [
-  // Kate Farms - Plant-based enteral formulas
   {
     name: "Kate Farms Standard 1.0",
     brand: "Kate Farms",
@@ -54,8 +51,6 @@ const ENTERAL_FORMULAS = [
     fiberContent: "Fiber-free",
     specialFeatures: ["Plant-based peptides", "Easy absorption", "Organic"],
   },
-
-  // Abbott Nutrition - Traditional enteral formulas
   {
     name: "Jevity 1.0",
     brand: "Abbott",
@@ -133,8 +128,6 @@ const ENTERAL_FORMULAS = [
     fiberContent: "Fiber-free",
     specialFeatures: ["Renal-specific", "High calorie", "Modified electrolytes"],
   },
-
-  // Nestlé Health Science - Enteral formulas
   {
     name: "Vivonex T.E.N.",
     brand: "Nestlé",
@@ -168,8 +161,6 @@ const ENTERAL_FORMULAS = [
     fiberContent: "Fiber-free",
     specialFeatures: ["Immune-enhancing", "Arginine", "Omega-3 fatty acids"],
   },
-
-  // Real Food Blends - Whole food enteral formulas
   {
     name: "Real Food Blends",
     brand: "Real Food Blends",
@@ -181,8 +172,6 @@ const ENTERAL_FORMULAS = [
     fiberContent: "Natural fiber from whole foods",
     specialFeatures: ["Whole food", "No artificial ingredients", "Allergen-friendly"],
   },
-
-  // Functional Formularies - Liquid Hope
   {
     name: "Liquid Hope",
     brand: "Functional Formularies",
@@ -194,8 +183,6 @@ const ENTERAL_FORMULAS = [
     fiberContent: "Natural fiber from whole foods",
     specialFeatures: ["Organic", "Whole food", "Non-GMO", "Shelf-stable"],
   },
-
-  // Danone/Nutricia - Specialized enteral formulas
   {
     name: "Nutrison",
     brand: "Nutricia",
@@ -209,6 +196,151 @@ const ENTERAL_FORMULAS = [
   },
 ]
 
+// Smart search function that mimics AI behavior
+function smartSearch(query: string, formulas: typeof ENTERAL_FORMULAS) {
+  const searchTerm = query.toLowerCase().trim()
+
+  // Define search patterns and their priorities
+  const searchPatterns = [
+    // Brand-specific searches
+    { pattern: /kate\s*farms?/i, priority: 10, filter: (f: any) => f.brand === "Kate Farms" },
+    { pattern: /abbott/i, priority: 10, filter: (f: any) => f.brand === "Abbott" },
+    { pattern: /nestl[eé]/i, priority: 10, filter: (f: any) => f.brand === "Nestlé" },
+    { pattern: /nutricia/i, priority: 10, filter: (f: any) => f.brand === "Nutricia" },
+
+    // Condition-specific searches
+    {
+      pattern: /diabetes|diabetic|glucerna/i,
+      priority: 9,
+      filter: (f: any) =>
+        f.name.includes("Glucerna") || f.indications.some((i: string) => i.toLowerCase().includes("diabetes")),
+    },
+    {
+      pattern: /copd|respiratory|pulmonary|pulmocare/i,
+      priority: 9,
+      filter: (f: any) =>
+        f.name.includes("Pulmocare") ||
+        f.indications.some((i: string) => i.toLowerCase().includes("copd") || i.toLowerCase().includes("respiratory")),
+    },
+    {
+      pattern: /kidney|renal|nepro/i,
+      priority: 9,
+      filter: (f: any) =>
+        f.name.includes("Nepro") ||
+        f.indications.some((i: string) => i.toLowerCase().includes("kidney") || i.toLowerCase().includes("renal")),
+    },
+    {
+      pattern: /malabsorption|crohn|ibd/i,
+      priority: 9,
+      filter: (f: any) =>
+        f.indications.some(
+          (i: string) =>
+            i.toLowerCase().includes("malabsorption") ||
+            i.toLowerCase().includes("crohn") ||
+            i.toLowerCase().includes("ibd"),
+        ),
+    },
+
+    // Feature-specific searches
+    {
+      pattern: /plant.?based|organic|vegan/i,
+      priority: 8,
+      filter: (f: any) =>
+        f.specialFeatures?.some(
+          (s: string) => s.toLowerCase().includes("plant-based") || s.toLowerCase().includes("organic"),
+        ),
+    },
+    {
+      pattern: /elemental|vivonex/i,
+      priority: 8,
+      filter: (f: any) =>
+        f.name.includes("Vivonex") || f.specialFeatures?.some((s: string) => s.toLowerCase().includes("elemental")),
+    },
+    {
+      pattern: /peptide|peptamen/i,
+      priority: 8,
+      filter: (f: any) =>
+        f.name.includes("Peptide") ||
+        f.name.includes("Peptamen") ||
+        f.specialFeatures?.some((s: string) => s.toLowerCase().includes("peptide")),
+    },
+    { pattern: /high.?calorie?|1\.5|2\.0/i, priority: 7, filter: (f: any) => f.caloriesPerMl >= 1.5 },
+    {
+      pattern: /fiber.?free|no.?fiber/i,
+      priority: 7,
+      filter: (f: any) => f.fiberContent?.toLowerCase().includes("fiber-free"),
+    },
+    {
+      pattern: /fiber|high.?fiber/i,
+      priority: 7,
+      filter: (f: any) => f.fiberContent && !f.fiberContent.toLowerCase().includes("fiber-free"),
+    },
+    {
+      pattern: /whole.?food|real.?food/i,
+      priority: 8,
+      filter: (f: any) => f.brand === "Real Food Blends" || f.brand === "Functional Formularies",
+    },
+
+    // Nutritional searches
+    { pattern: /standard|1\.0/i, priority: 5, filter: (f: any) => f.caloriesPerMl === 1.0 },
+    {
+      pattern: /isotonic|osmolite/i,
+      priority: 7,
+      filter: (f: any) =>
+        f.name.includes("Osmolite") || f.specialFeatures?.some((s: string) => s.toLowerCase().includes("isotonic")),
+    },
+  ]
+
+  const results: Array<{ formula: any; score: number }> = []
+
+  // Apply pattern matching
+  for (const pattern of searchPatterns) {
+    if (pattern.pattern.test(searchTerm)) {
+      const matches = formulas.filter(pattern.filter)
+      matches.forEach((formula) => {
+        const existing = results.find((r) => r.formula.name === formula.name)
+        if (existing) {
+          existing.score += pattern.priority
+        } else {
+          results.push({ formula, score: pattern.priority })
+        }
+      })
+    }
+  }
+
+  // If no pattern matches, do general text search
+  if (results.length === 0) {
+    formulas.forEach((formula) => {
+      let score = 0
+
+      // Name match (highest priority)
+      if (formula.name.toLowerCase().includes(searchTerm)) score += 10
+
+      // Brand match
+      if (formula.brand.toLowerCase().includes(searchTerm)) score += 8
+
+      // Description match
+      if (formula.description.toLowerCase().includes(searchTerm)) score += 6
+
+      // Indications match
+      if (formula.indications.some((indication: string) => indication.toLowerCase().includes(searchTerm))) score += 7
+
+      // Special features match
+      if (formula.specialFeatures?.some((feature: string) => feature.toLowerCase().includes(searchTerm))) score += 5
+
+      if (score > 0) {
+        results.push({ formula, score })
+      }
+    })
+  }
+
+  // Sort by score and return top 5
+  return results
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5)
+    .map((r) => r.formula)
+}
+
 export async function POST(request: Request) {
   try {
     const { query } = await request.json()
@@ -217,33 +349,15 @@ export async function POST(request: Request) {
       return Response.json({ error: "Search query is required" }, { status: 400 })
     }
 
-    // Use AI to enhance the search and provide contextual information
-    const { object } = await generateObject({
-      model: openai("gpt-4o"),
-      schema: FormulaSchema,
-      prompt: `You are a clinical nutrition expert specializing in ENTERAL NUTRITION formulas for tube feeding. Based on the search query "${query}", find and return relevant enteral formulas from this database: ${JSON.stringify(ENTERAL_FORMULAS)}. 
+    console.log("🔍 Smart searching for:", query)
 
-      IMPORTANT: Only return formulas that are specifically designed for ENTERAL NUTRITION (tube feeding). Do not include oral supplements, protein powders, or other non-enteral products.
+    // Use smart search algorithm (no AI dependency)
+    const filteredFormulas = smartSearch(query, ENTERAL_FORMULAS)
 
-      Consider the following when matching:
-      - Enteral formula names and brands (Kate Farms, Abbott, Nestlé, etc.)
-      - Medical conditions/indications for tube feeding
-      - Nutritional characteristics (calories, protein, fiber content)
-      - Special features (plant-based, elemental, diabetes-specific, etc.)
-      - Tube feeding applications (PEG, NG, G-tube, etc.)
-
-      Return the most relevant ENTERAL formulas (up to 5) that match the search criteria. If the query mentions:
-      - "plant-based" or "organic" - prioritize Kate Farms and whole food formulas
-      - Specific conditions like diabetes, COPD, kidney disease - prioritize condition-specific enteral formulas
-      - "elemental" or "peptide" - prioritize pre-digested enteral formulas
-      - "fiber" - prioritize fiber-containing enteral formulas
-
-      For each formula, ensure all nutritional data is accurate based on the provided database and that it's appropriate for tube feeding administration.`,
-    })
-
-    return Response.json(object)
+    console.log("✅ Smart search successful, found:", filteredFormulas.length, "formulas")
+    return Response.json({ formulas: filteredFormulas })
   } catch (error) {
-    console.error("Error searching formulas:", error)
+    console.error("❌ Search failed:", error)
     return Response.json({ error: "Failed to search formulas" }, { status: 500 })
   }
 }

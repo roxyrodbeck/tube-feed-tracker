@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Eye, EyeOff, User, Mail, Lock, AlertCircle } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
+import { trackAuth } from "@/lib/analytics"
 
 export default function SignInPage() {
   const [isLogin, setIsLogin] = useState(true)
@@ -67,8 +68,14 @@ export default function SignInPage() {
       let result
       if (isLogin) {
         result = await login(email.trim().toLowerCase(), password)
+        if (result.success) {
+          trackAuth("login")
+        }
       } else {
         result = await register(email.trim().toLowerCase(), password, name.trim())
+        if (result.success) {
+          trackAuth("register")
+        }
       }
 
       if (result.success) {
@@ -98,18 +105,18 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-green-600 dark:from-gray-900 dark:to-gray-800 p-4">
       <div className="w-full max-w-md">
         <Card className="shadow-xl">
           <CardHeader className="text-center pb-6">
             <div className="flex justify-center mb-4">
-              <div className="bg-blue-100 dark:bg-blue-900 p-3 rounded-full">
+              <div className="bg-green-100 dark:bg-gray-900 p-3 rounded-full">
                 <img
                   src="/favicon.svg"
                   alt="Tube Feed Tracker"
                   width={32}
                   height={32}
-                  className="w-8 h-8 text-blue-600 dark:text-blue-400"
+                  className="w-8 h-8 text-green-600 dark:text-green-400"
                 />
               </div>
             </div>
@@ -198,7 +205,7 @@ export default function SignInPage() {
                 </Alert>
               )}
 
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" disabled={loading}>
                 {loading ? (
                   <div className="flex items-center gap-2">
                     <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
@@ -216,7 +223,7 @@ export default function SignInPage() {
               <button
                 type="button"
                 onClick={switchMode}
-                className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium disabled:opacity-50"
+                className="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 text-sm font-medium disabled:opacity-50"
                 disabled={loading}
               >
                 {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}

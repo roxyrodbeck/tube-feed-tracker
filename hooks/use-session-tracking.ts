@@ -1,11 +1,9 @@
 "use client"
 
 import { useEffect, useRef } from "react"
-import { useAuth } from "@/hooks/use-auth"
 import { logger } from "@/lib/logger"
 
 export function useSessionTracking() {
-  const { user } = useAuth()
   const sessionId = useRef<string>()
 
   useEffect(() => {
@@ -15,7 +13,6 @@ export function useSessionTracking() {
     // Log session start
     logger.logSession({
       sessionId: sessionId.current,
-      userId: user?.id,
       totalCalculations: 0,
       totalSearches: 0,
       uniqueFormulasUsed: [],
@@ -34,7 +31,7 @@ export function useSessionTracking() {
       window.removeEventListener("beforeunload", handleBeforeUnload)
       handleBeforeUnload()
     }
-  }, [user?.id])
+  }, [])
 
   return sessionId.current
 }

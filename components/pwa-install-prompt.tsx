@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Download, X, Smartphone, Monitor } from "lucide-react"
+import { trackPWAInstall } from "@/lib/analytics"
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[]
@@ -47,6 +48,9 @@ export function PWAInstallPrompt() {
       setIsInstalled(true)
       setShowPrompt(false)
       setDeferredPrompt(null)
+
+      // Track PWA installation
+      trackPWAInstall()
     }
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt)
@@ -66,6 +70,7 @@ export function PWAInstallPrompt() {
 
     if (outcome === "accepted") {
       setShowPrompt(false)
+      trackPWAInstall()
     }
 
     setDeferredPrompt(null)

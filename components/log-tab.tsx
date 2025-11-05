@@ -162,6 +162,12 @@ export function LogTab({ sessionId }: LogTabProps) {
                         {log.outputs.milliliters && `${log.outputs.milliliters?.toFixed(2)} mL`}
                         {log.outputs.hours && `${log.outputs.hours?.toFixed(2)} hrs`}
                         {log.outputs.milPerHour && `${log.outputs.milPerHour?.toFixed(2)} mL/hr`}
+                        {log.selectedFormula?.totalCalories !== undefined &&
+                          log.selectedFormula?.totalCalories !== null && (
+                            <div className="font-semibold text-green-700 dark:text-green-400 mt-1">
+                              {log.selectedFormula.totalCalories.toFixed(0)} cal
+                            </div>
+                          )}
                       </div>
                     </div>
                   </div>
@@ -177,11 +183,6 @@ export function LogTab({ sessionId }: LogTabProps) {
                       <div className="text-xs text-green-800 dark:text-green-200 space-y-1">
                         <div>Brand: {log.selectedFormula.brand}</div>
                         <div>Calories: {log.selectedFormula.caloriesPerMl} cal/mL</div>
-                        {log.selectedFormula.totalCalories && (
-                          <div className="font-medium">
-                            Total Calories: {log.selectedFormula.totalCalories.toFixed(0)} cal
-                          </div>
-                        )}
                       </div>
                     </div>
                   )}

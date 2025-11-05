@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { LogOut, Settings, ChevronDown } from "lucide-react"
+import { LogOut, LogIn, ChevronDown, User } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 
 export function UserMenu() {
@@ -16,13 +16,23 @@ export function UserMenu() {
     return fullName.split(" ")[0]
   }
 
-  if (!user) {
-    return null
-  }
-
   const handleSignOut = () => {
     logout()
+    setShowMenu(false)
+    router.push("/")
+  }
+
+  const handleSignIn = () => {
     router.push("/auth/signin")
+  }
+
+  if (!user) {
+    return (
+      <Button variant="ghost" onClick={handleSignIn} className="flex items-center gap-2 px-3 py-2 rounded-full">
+        <LogIn className="h-4 w-4" />
+        <span className="text-sm font-medium hidden sm:block">Sign In</span>
+      </Button>
+    )
   }
 
   return (
@@ -33,13 +43,7 @@ export function UserMenu() {
         className="flex items-center gap-2 px-3 py-2 rounded-full"
       >
         <div className="bg-blue-100 dark:bg-blue-900 p-1.5 rounded-full">
-          <img
-            src="/favicon.svg"
-            alt="User"
-            width={20}
-            height={20}
-            className="w-5 h-5 text-blue-600 dark:text-blue-400"
-          />
+          <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
         </div>
         <span className="text-sm font-medium text-gray-700 dark:text-gray-300 hidden sm:block">
           {user.name ? getFirstName(user.name) : user.email}
@@ -57,16 +61,10 @@ export function UserMenu() {
                 <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
               </div>
 
-              <div className="space-y-1">
-                <Button variant="ghost" className="w-full justify-start" size="sm">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Settings
-                </Button>
-                <Button variant="ghost" className="w-full justify-start" size="sm" onClick={handleSignOut}>
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
-                </Button>
-              </div>
+              <Button variant="ghost" className="w-full justify-start" size="sm" onClick={handleSignOut}>
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
+              </Button>
             </CardContent>
           </Card>
         </>

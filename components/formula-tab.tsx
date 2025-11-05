@@ -75,9 +75,9 @@ export function FormulaTab({ calculationData, sessionId, onFormulaSelect, select
       </div>
 
       {selectedFormula && (
-        <Card className="bg-blue-50 dark:bg-blue-900/20">
+        <Card className="bg-green-50 dark:bg-green-900/20">
           <CardHeader>
-            <CardTitle className="text-blue-900 dark:text-blue-100 flex items-center">
+            <CardTitle className="text-green-900 dark:text-green-100 flex items-center">
               <Calculator className="h-5 w-5 mr-2" />
               Selected Formula: {selectedFormula.name}
             </CardTitle>
@@ -85,8 +85,8 @@ export function FormulaTab({ calculationData, sessionId, onFormulaSelect, select
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <h4 className="font-medium text-blue-900 dark:text-blue-100">Formula Details</h4>
-                <div className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+                <h4 className="font-medium text-green-900 dark:text-green-100">Formula Details</h4>
+                <div className="text-sm text-green-800 dark:text-green-200 space-y-1">
                   <div>Brand: {selectedFormula.brand}</div>
                   <div>Calories: {selectedFormula.caloriesPerMl} cal/mL</div>
                   <div>Protein: {(selectedFormula.proteinPerMl * 1000).toFixed(1)}g/L</div>
@@ -96,8 +96,8 @@ export function FormulaTab({ calculationData, sessionId, onFormulaSelect, select
               </div>
 
               <div className="space-y-2">
-                <h4 className="font-medium text-blue-900 dark:text-blue-100">Nutritional Calculations</h4>
-                <div className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+                <h4 className="font-medium text-green-900 dark:text-green-100">Nutritional Calculations</h4>
+                <div className="text-sm text-green-800 dark:text-green-200 space-y-1">
                   {calculationData.milliliters && <div>Volume: {calculationData.milliliters.toFixed(0)} mL</div>}
                   {totalCalories && <div className="font-semibold">Total Calories: {totalCalories.toFixed(0)} cal</div>}
                   {dailyCalories && (
@@ -119,8 +119,8 @@ export function FormulaTab({ calculationData, sessionId, onFormulaSelect, select
               </Alert>
             )}
 
-            <div className="pt-2 border-t border-blue-200 dark:border-blue-800">
-              <p className="text-xs text-blue-700 dark:text-blue-300">{selectedFormula.description}</p>
+            <div className="pt-2 border-t border-green-200 dark:border-green-800">
+              <p className="text-xs text-green-700 dark:text-green-300">{selectedFormula.description}</p>
             </div>
           </CardContent>
         </Card>

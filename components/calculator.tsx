@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useSessionTracking } from "@/hooks/use-session-tracking"
 import { logger } from "@/lib/logger"
+import { trackCalculation } from "@/lib/analytics"
 import { FlaskConical, CalculatorIcon } from "lucide-react"
 
 interface Formula {
@@ -69,6 +70,9 @@ export function Calculator({ onCalculationChange, selectedFormula, onFormulaSele
         : undefined,
       duration,
     })
+
+    // Track with Google Analytics
+    trackCalculation(calculationType, !!selectedFormula)
   }
 
   const notifyCalculationChange = (mil: string, hr: string, rate: string, output: string | null) => {
@@ -163,12 +167,48 @@ export function Calculator({ onCalculationChange, selectedFormula, onFormulaSele
       return
     }
 
-    // Calculate calories if formula is selected
-    calculateCalories(finalMilliliters, finalHours)
+    let calculatedCalories: number | null = null
+    if (selectedFormula && finalMilliliters > 0) {
+      calculatedCalories = finalMilliliters * selectedFormula.caloriesPerMl
+      setTotalCalories(calculatedCalories)
 
-    // Notify parent and log calculation
+      // Calculate daily calories
+      if (finalHours > 0) {
+        const dailyCals = (calculatedCalories / finalHours) * 24
+        setDailyCalories(dailyCals)
+      } else {
+        const currentRate = Number.parseFloat(milPerHour)
+        if (currentRate > 0) {
+          const dailyVolume = currentRate * 24
+          const dailyCals = dailyVolume * selectedFormula.caloriesPerMl
+          setDailyCalories(dailyCals)
+        }
+      }
+    }
+
+    // Notify parent and log calculation with calculated calories
     notifyCalculationChange(milliliters, hours, milPerHour, outputField)
-    logCalculation(calculationType, inputs, outputs)
+
+    const duration = calculationStartTime ? (Date.now() - calculationStartTime) / 1000 : undefined
+
+    logger.logCalculation({
+      sessionId: sessionId || "",
+      calculationType,
+      inputs,
+      outputs,
+      selectedFormula: selectedFormula
+        ? {
+            name: selectedFormula.name,
+            brand: selectedFormula.brand,
+            caloriesPerMl: selectedFormula.caloriesPerMl,
+            totalCalories: calculatedCalories,
+          }
+        : undefined,
+      duration,
+    })
+
+    // Track with Google Analytics
+    trackCalculation(calculationType, !!selectedFormula)
   }
 
   return (
@@ -264,7 +304,7 @@ export function Calculator({ onCalculationChange, selectedFormula, onFormulaSele
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4">
-        <Button onClick={calculate} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white">
+        <Button onClick={calculate} className="flex-1 bg-green-600 hover:bg-green-700 text-white">
           Calculate
         </Button>
         <Button onClick={reset} variant="outline" className="flex-1 bg-transparent">
