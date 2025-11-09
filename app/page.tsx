@@ -43,13 +43,15 @@ export default function Home() {
                   <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Tube Feed Tracker</h1>
                 </div>
               </div>
+
+              <div className="px-6">
+                <MainTabs sessionId={sessionId} />
+              </div>
             </div>
           </div>
 
-          <div className="p-6 pt-0">
-            <MainTabs sessionId={sessionId} />
-
-            <div className="mt-8 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="p-6 pt-6">
+            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
               <p className="text-sm text-gray-500 dark:text-gray-400">Copyright 2025, Roxana Rodriguez-Becker</p>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 <a
